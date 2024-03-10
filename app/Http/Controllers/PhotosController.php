@@ -56,7 +56,6 @@ class PhotosController extends Controller
             throw new \Exception('Could not delete image file:' . $photoFilename);
         }
 
-
         $photo->tags()->delete();
         $photo->delete();
         

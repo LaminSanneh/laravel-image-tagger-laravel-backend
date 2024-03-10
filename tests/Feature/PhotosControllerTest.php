@@ -4,14 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Photo;
 use App\Models\Tag;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Testing\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
-use Tests\TestCase;
 
 class PhotosControllerTest extends TestController
 {
@@ -77,7 +74,7 @@ class PhotosControllerTest extends TestController
         Storage::fake($storageDisk);
         
         $file = UploadedFile::fake()->image($filename);
-        $response = $this->uploadFile(UploadedFile::fake()->image($filename));
+        $this->uploadFile($file, 3);
         
         $filesFromDB = DB::table('photos')->where('photo_title', '=', $filename)->get();
         
@@ -85,9 +82,13 @@ class PhotosControllerTest extends TestController
             ::disk('public')->assertExists($filesFromDB[0]->photo_url);
         
         $photoId = $filesFromDB[0]->id;
-        $response = $this->json('DELETE', '/api/photos/' . $photoId);
         
+        $this->assertDatabaseCount('tags', 3);
+
+        $response = $this->json('DELETE', '/api/photos/' . $photoId);
         $response->assertOk();
+
+        $this->assertDatabaseCount('tags', 0);
 
         Storage::disk($storageDisk)->assertMissing($filesFromDB[0]->photo_url);
     }
