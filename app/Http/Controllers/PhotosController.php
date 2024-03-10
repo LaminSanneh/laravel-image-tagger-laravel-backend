@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Photo;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 
 class PhotosController extends Controller
@@ -18,29 +19,30 @@ class PhotosController extends Controller
         return Photo::with('tags')->find($id);
     }
     
-    public function uploadPhotos(Request $request) {
+    public function uploadPhotos(Request $request): Response {
         
         $file = $request->file('photo');
         $fileUploaded = false;
         
         if ($file && $file->isValid()) {
             $fileUploaded = Storage::disk('public')->put('', $file);            
+        } else {
+            return response([], Response::HTTP_BAD_REQUEST);
         }
         
         $fileDBTitle = $file->getClientOriginalName();
         $fileDiskStorageTitle = $fileUploaded;
 
-        if ($fileUploaded) {    
-            \Illuminate\Support\Facades\DB
-                ::table('photos')
-                ->insert([
-                    'photo_title' => $fileDBTitle,
-                    'photo_url' => $fileDiskStorageTitle,
-                ]);
+        if ($fileUploaded) {   
+            $photo = Photo::create([
+                'photo_title' => $fileDBTitle,
+                'photo_url' => $fileDiskStorageTitle,
+            ]);
 
-            return response('');
+            return response($photo);
         } else {
-            return response('', \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+            return response([], Response::HTTP_BAD_REQUEST);
         }
+    }
     }
 }
