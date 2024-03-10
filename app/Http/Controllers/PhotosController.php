@@ -44,5 +44,22 @@ class PhotosController extends Controller
             return response([], Response::HTTP_BAD_REQUEST);
         }
     }
+    
+    public function deletePhoto(Request $request, $photoId) {
+        $photo = Photo::find($photoId);
+        
+        $photoFilename = $photo->getAttributes()['photo_url'];
+        
+        $deletedPhoto = Storage::disk('public')->delete($photoFilename);
+
+        if (!$deletedPhoto) {
+            throw new \Exception('Could not delete image file:' . $photoFilename);
+        }
+
+
+        $photo->tags()->delete();
+        $photo->delete();
+        
+        return response([]);
     }
 }

@@ -32,6 +32,11 @@ class Photo extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'photo_title',
+        'photo_url'
+    ];
+
     public $appends = [
         'photo_url'
     ];
